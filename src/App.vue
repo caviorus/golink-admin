@@ -1,5 +1,11 @@
+<script setup lang="ts">
+import Admin from "@/layouts/admin.vue";
+</script>
+
 <template>
   <UApp>
-    <RouterView />
+    <Admin>
+      <RouterView />
+    </Admin>
   </UApp>
 </template>
