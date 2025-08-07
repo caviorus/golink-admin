@@ -1,5 +1,5 @@
 import type { NavigationMenuItem } from "@nuxt/ui";
-import { menuDataItems } from "./menu/items";
+import { menuDataItems } from "./menu/item";
 import { ref } from "vue";
 
 const menuItems = ref<NavigationMenuItem[][]>([

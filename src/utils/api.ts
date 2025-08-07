@@ -1,13 +1,12 @@
-import { useCookie } from '@nuxt/ui/runtime/inertia/stubs.js';
-import axios from 'axios';
+import axios from "axios";
 
-const token = useCookie('token');
+const token = localStorage.getItem("token");
 
 const api = axios.create({
-  baseURL: 'http://localhost:3000/api',
+  baseURL: "http://localhost:8080/api",
   headers: {
-    'Content-Type': 'application/json',
-    Authorization: `Bearer ${token.value}`,
+    "Content-Type": "application/json",
+    Authorization: token ? `Bearer ${token}` : "",
   },
 });
 

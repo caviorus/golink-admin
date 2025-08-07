@@ -4,6 +4,11 @@ const router = createRouter({
   history: createWebHistory(),
   routes: [
     {
+      path: "/signin",
+      name: "signin",
+      component: () => import("../pages/auth/signin.vue"),
+    },
+    {
       path: "/",
       name: "dashboard",
       component: () => import("../pages/dashboard/dashboard.vue"),
@@ -23,6 +28,11 @@ const router = createRouter({
       name: "item-subcategories",
       component: () => import("../pages/item_subcategory/item_subcategory.vue"),
     },
+    {
+      path: "/settings",
+      name: "settings",
+      component: () => import("../pages/settings/settings.vue"),
+    }
   ],
 });
 

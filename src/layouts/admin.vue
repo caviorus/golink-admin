@@ -6,6 +6,7 @@ import { menuItems, menuItemsBottom, menuItemsAppbar } from "@/constants/menu";
 import { useRoute, useRouter } from "vue-router";
 import { ref, computed } from "vue";
 import { useCookies } from "@vueuse/integrations/useCookies";
+import { useAuth } from "@/stores/auth";
 
 const route = useRoute();
 const router = useRouter();
@@ -28,8 +29,8 @@ function sidebarToggle() {
     sidebar.value?.sidebarToggle();
 }
 function handleSignOut() {
-    cookies.remove("token");
-    router.push("/auth/signin");
+  useAuth().clearToken();
+  router.push("/signin");
 }
 
 </script>
