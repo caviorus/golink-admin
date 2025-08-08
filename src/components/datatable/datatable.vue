@@ -5,12 +5,14 @@ import api from "@/utils/api";
 // ✅ Define your own TableColumn type
 type TableColumn = {
   accessorKey: string;
-  header: string;
+  header: any;
   cell?: (props: any) => any; // Optional custom cell renderer
 };
 
 const props = defineProps<{
   endpoint: string;
+  sort: string;
+  sortDirection: "asc" | "desc";
   columns: TableColumn[];
   limitOptions?: number[];
 }>();
@@ -34,21 +36,24 @@ defineExpose({
 
 async function getDataItem() {
   try {
-    await api.get(props.endpoint, {
-      params: {
-        start: start.value,
-        limit: limit.value,
-      },
-    })
-    .then((response) => {
-      if (response.data.data.items) {
-        items.value = response.data.data.items;
-        totalItems.value = response.data.data.total || 0;
-      } else {
-        items.value = [];
-        totalItems.value = 0;
-      }
-    });
+    await api
+      .get(props.endpoint, {
+        params: {
+          start: start.value,
+          limit: limit.value,
+          sort: props.sort,
+          sortDirection: props.sortDirection,
+        },
+      })
+      .then((response) => {
+        if (response.data.data.items) {
+          items.value = response.data.data.items;
+          totalItems.value = response.data.data.total || 0;
+        } else {
+          items.value = [];
+          totalItems.value = 0;
+        }
+      });
 
     emit("fetched", items.value);
   } catch (error) {
@@ -88,19 +93,27 @@ const displayColumns = computed(() => [sequenceColumn, ...props.columns]);
 
 <template>
   <div>
-    <div class="border rounded">
+    <div class="border border-default rounded">
       <!-- Replace with your own table component -->
-       
+
       <UTable
-        :data="items"
+
+      :data="items"
+      :sorting-options="{
+        manualSorting: true
+      }"
         :columns="displayColumns"
         :striped="true"
         :hoverable="true"
       />
     </div>
 
-    <div class="mt-4 flex flex-col md:flex-row justify-between items-center gap-2">
-      <div class="flex items-center w-full justify-between md:w-fit md:justify-start gap-2">
+    <div
+      class="mt-4 flex flex-col md:flex-row justify-between items-center gap-2"
+    >
+      <div
+        class="flex items-center w-full justify-between md:w-fit md:justify-start gap-2"
+      >
         <USelect
           v-model="limit"
           :items="limitOptions"
