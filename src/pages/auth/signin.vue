@@ -67,7 +67,7 @@ async function onSubmit(event: Event) {
       console.error(error);
       toast.add({
         title: "Error",
-        description: "An error occurred during login.",
+        description: error.response.data.message || "An error occurred during login.",
         color: "error",
       });
     })

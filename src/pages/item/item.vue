@@ -6,43 +6,13 @@ import Swal from "sweetalert2";
 import FormItem from "./form_item.vue";
 import { menuDataItems } from "@/constants/menu/item";
 const menuItems = [menuDataItems.children];
-import UButton from "@nuxt/ui/components/Button.vue";
 
 const toast = useToast();
 
-const sort = ref("name");
-const sortDirection = ref<"asc" | "desc">("asc");
-
-function handleSorting(column: any) {
-  const isSorted = column.getIsSorted();
-  sort.value = column.id;
-  sortDirection.value = isSorted === "asc" ? "desc" : "asc";
-}
 const columns = [
   {
     accessorKey: "name",
-    header: ({ column }: any) => {
-      console.log(column);
-
-      const isSorted = column.getIsSorted();
-
-      return h(UButton, {
-        color: "neutral",
-        variant: "ghost",
-        label: "Email",
-        icon: isSorted
-          ? isSorted === "asc"
-            ? "i-lucide-arrow-up-narrow-wide"
-            : "i-lucide-arrow-down-wide-narrow"
-          : "i-lucide-arrow-up-down",
-        class: "-mx-2.5",
-        onClick: () => {
-          handleSorting(column);
-          column.toggleSorting(column.getIsSorted() === "asc");
-          datatable.value?.getDataItem?.();
-        },
-      });
-    },
+    sortable: true,
   },
   { accessorKey: "subcategory.category.name", header: "Category" },
   { accessorKey: "subcategory.name", header: "Subcategory" },
@@ -76,11 +46,6 @@ const addItemModal = ref(false);
 const categories = ref([]);
 const subcategories = ref([]);
 const datatable = ref();
-
-type selectOption = {
-  label: string;
-  value: string | number;
-};
 
 const form = ref({
   id: null,
@@ -130,7 +95,8 @@ function handlePost() {
         description: "Item added successfully.",
         color: "success",
       });
-      datatable.value?.getDataItem?.();
+      resetForm();
+      datatable.value?.getData?.();
     })
     .catch((error) => {
       console.error("Error adding item:", error);
@@ -170,28 +136,6 @@ function handleEdit(id: string) {
     });
 }
 
-function confirmDelete(id: string) {
-  return new Promise((resolve) => {
-    toast.add({
-      title: "Confirm Delete",
-      description: "Are you sure you want to delete this item?",
-      color: "warning",
-      actions: [
-        {
-          label: "Cancel",
-          color: "secondary",
-          onClick: () => resolve(false),
-        },
-        {
-          label: "Delete",
-          color: "error",
-          onClick: () => resolve(true),
-        },
-      ],
-    });
-  });
-}
-
 function handleDelete(id: string) {
   Swal.fire({
     title: "Konfirmasi",
@@ -212,7 +156,7 @@ function handleDelete(id: string) {
             description: "Item deleted successfully.",
             color: "success",
           });
-          datatable.value?.getDataItem?.();
+          datatable.value?.getData?.();
         })
         .catch((error) => {
           console.error("Error deleting item:", error);
@@ -236,7 +180,8 @@ function handlePut(id: string) {
         description: "Item updated successfully.",
         color: "success",
       });
-      datatable.value?.getDataItem?.();
+      resetForm();
+      datatable.value?.getData?.();
     })
     .catch((error) => {
       console.error("Error updating item:", error);
@@ -246,6 +191,19 @@ function handlePut(id: string) {
         color: "error",
       });
     });
+}
+
+function resetForm() {
+  form.value = {
+    id: null,
+    name: "",
+    category_id: undefined,
+    subcategory_id: undefined,
+    link: "",
+    type: undefined,
+    description: "",
+    thumbnail: "",
+  };
 }
 
 onMounted(() => {
@@ -267,13 +225,11 @@ onMounted(() => {
   <div>
     <h1 class="text-xl font-bold mb-4">Item List</h1>
     <UNavigationMenu :items="menuItems" content-orientation="horizontal" />
-    <UButton class="mb-2" icon="i-lucide-plus" @click="addItemModal = true"
+    <UButton class="mb-2" icon="i-lucide-plus" @click="addItemModal = true; resetForm()" size="md"
       >Add Item</UButton
     >
     <DataTable
       ref="datatable"
-      :sort="sort"
-      :sort-direction="sortDirection"
       endpoint="/items"
       :columns="columns"
     />

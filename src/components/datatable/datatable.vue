@@ -1,18 +1,21 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from "vue";
+import { ref, computed, onMounted, h } from "vue";
 import api from "@/utils/api";
+import UButton from "@nuxt/ui/components/Button.vue";
+
+const sort = ref("");
+const sortDirection = ref<"asc" | "desc">("asc");
 
 // ✅ Define your own TableColumn type
 type TableColumn = {
   accessorKey: string;
-  header: any;
+  header?: any;
+  sortable?: boolean;
   cell?: (props: any) => any; // Optional custom cell renderer
 };
 
 const props = defineProps<{
   endpoint: string;
-  sort: string;
-  sortDirection: "asc" | "desc";
   columns: TableColumn[];
   limitOptions?: number[];
 }>();
@@ -31,18 +34,18 @@ const page = ref(1);
 defineExpose({
   updateStart,
   updateLimit,
-  getDataItem,
+  getData,
 });
 
-async function getDataItem() {
+async function getData() {
   try {
     await api
       .get(props.endpoint, {
         params: {
           start: start.value,
           limit: limit.value,
-          sort: props.sort,
-          sortDirection: props.sortDirection,
+          sort: sort.value,
+          sortDirection: sortDirection.value,
         },
       })
       .then((response) => {
@@ -63,14 +66,14 @@ async function getDataItem() {
 
 function updateStart(newStart: number) {
   start.value = newStart;
-  getDataItem();
+  getData();
 }
 
 function updateLimit(newLimit: number) {
   limit.value = newLimit;
   start.value = 0;
   page.value = 1;
-  getDataItem();
+  getData();
 }
 
 function onLimitChange(event: Event) {
@@ -79,7 +82,7 @@ function onLimitChange(event: Event) {
 }
 
 onMounted(() => {
-  getDataItem();
+  getData();
 });
 
 const sequenceColumn: TableColumn = {
@@ -89,6 +92,44 @@ const sequenceColumn: TableColumn = {
 };
 
 const displayColumns = computed(() => [sequenceColumn, ...props.columns]);
+const formatedColumns = computed(() => {
+  return displayColumns.value.map((col) => {
+    return {
+      ...col,
+      header: col.sortable
+        ? ({ column }: any) => createSortableHeader({ column })
+        : col.header || col.accessorKey,
+    };
+  });
+});
+
+function createSortableHeader({ column }: any) {
+  console.log(column);
+  const isSorted = column.getIsSorted();
+
+  return h(UButton, {
+    color: "neutral",
+    variant: "ghost",
+    label: column.columnDef.accessorKey,
+    icon: isSorted
+      ? isSorted === "asc"
+        ? "i-lucide-arrow-up-narrow-wide"
+        : "i-lucide-arrow-down-wide-narrow"
+      : "i-lucide-arrow-up-down",
+    class: "-mx-2.5",
+    onClick: () => {
+      handleSorting(column);
+      column.toggleSorting(column.getIsSorted() === "asc");
+      getData();
+    },
+  });
+}
+
+function handleSorting(column: any) {
+  const isSorted = column.getIsSorted();
+  sort.value = column.id;
+  sortDirection.value = isSorted === "asc" ? "desc" : "asc";
+}
 </script>
 
 <template>
@@ -97,12 +138,11 @@ const displayColumns = computed(() => [sequenceColumn, ...props.columns]);
       <!-- Replace with your own table component -->
 
       <UTable
-
-      :data="items"
-      :sorting-options="{
-        manualSorting: true
-      }"
-        :columns="displayColumns"
+        :data="items"
+        :sorting-options="{
+          manualSorting: true,
+        }"
+        :columns="formatedColumns"
         :striped="true"
         :hoverable="true"
       />
