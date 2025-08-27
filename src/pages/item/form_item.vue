@@ -8,7 +8,8 @@ defineProps<{
     link: string;
     type: undefined;
     description: string;
-    thumbnail: string;
+    thumbnail: File | null;
+    images: File[]; // Add this line to define images as an array of Files
   };
   categories: never[];
   getSubcategories: () => Promise<void>;
@@ -20,7 +21,7 @@ const addItemModal = defineModel<boolean>("addItemModal", { required: true });
 </script>
 
 <template>
-  <UModal v-model:open="addItemModal" title="Add Item" direction="left">
+  <UModal v-model:open="addItemModal"  title="Add Item" direction="left">
     <template #body>
       <div class="p-4">
         <form>
@@ -84,11 +85,10 @@ const addItemModal = defineModel<boolean>("addItemModal", { required: true });
               name="thumbnail"
               class="w-full md:col-span-2"
             >
-              <UInput
-                v-model="form.thumbnail"
-                placeholder="Enter thumbnail URL"
-                class="w-full"
-              />
+              <UFileUpload v-model="form.thumbnail" class="min-h-48 w-full"></UFileUpload>
+            </UFormField>
+            <UFormField label="Images" name="images" class="w-full md:col-span-2">
+              <UFileUpload v-model="form.images" class="min-h-48 w-full" :multiple="true"></UFileUpload>
             </UFormField>
           </div>
         </form>

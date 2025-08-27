@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { h, onMounted, ref, nextTick } from "vue";
 import DataTable from "@/components/datatable/datatable.vue";
-import api from "@/utils/api";
+import { api, apiFormData } from "@/utils/api";
 import Swal from "sweetalert2";
 import FormItem from "./form_item.vue";
 import { menuDataItems } from "@/constants/menu/item";
@@ -55,7 +55,8 @@ const form = ref({
   link: "",
   type: undefined,
   description: "",
-  thumbnail: "",
+  thumbnail: null,
+  images: []
 });
 
 async function getCategories() {
@@ -86,7 +87,7 @@ async function getSubcategories() {
 }
 
 function handlePost() {
-  api
+  apiFormData
     .post("/items", form.value)
     .then((response) => {
       addItemModal.value = false;
@@ -171,7 +172,7 @@ function handleDelete(id: string) {
 }
 
 function handlePut(id: string) {
-  api
+  apiFormData
     .put(`/items/${id}`, form.value)
     .then((response) => {
       addItemModal.value = false;
@@ -202,7 +203,8 @@ function resetForm() {
     link: "",
     type: undefined,
     description: "",
-    thumbnail: "",
+    thumbnail: null,
+    images: [],
   };
 }
 
@@ -225,13 +227,16 @@ onMounted(() => {
   <div>
     <h1 class="text-xl font-bold mb-4">Item List</h1>
     <UNavigationMenu :items="menuItems" content-orientation="horizontal" />
-    <UButton class="mb-2" icon="i-lucide-plus" @click="addItemModal = true; resetForm()" size="md"
+    <UButton
+      class="mb-2"
+      icon="i-lucide-plus"
+      @click="
+        addItemModal = true;
+        resetForm();
+      "
+      size="md"
       >Add Item</UButton
     >
-    <DataTable
-      ref="datatable"
-      endpoint="/items"
-      :columns="columns"
-    />
+    <DataTable ref="datatable" endpoint="/items" :columns="columns" />
   </div>
 </template>

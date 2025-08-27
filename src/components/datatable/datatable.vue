@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, h } from "vue";
-import api from "@/utils/api";
+import { api } from "@/utils/api";
 import UButton from "@nuxt/ui/components/Button.vue";
 
 const sort = ref("");

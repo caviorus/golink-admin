@@ -2,7 +2,7 @@
 import * as z from "zod";
 import { ref, reactive, onMounted } from "vue";
 import { useRouter } from "vue-router";
-import api from "@/utils/api";
+import { api } from "@/utils/api";
 import { useAuth } from "@/stores/auth";
 
 const router = useRouter();
@@ -14,7 +14,7 @@ const token = ref<string | null>(localStorage.getItem("token"));
 
 onMounted(() => {
   if (token.value && token.value.length > 0) {
-    router.push("/");
+    handleSignedIn();
   }
 });
 
@@ -29,6 +29,10 @@ const state = reactive<Partial<Schema>>({
   username: undefined,
   password: undefined,
 });
+
+function handleSignedIn() {
+  router.push("/");
+}
 
 async function onSubmit(event: Event) {
   event.preventDefault();
@@ -54,7 +58,7 @@ async function onSubmit(event: Event) {
       if (response.data.token) {
         useAuth().setToken(response.data.token);
         token.value = response.data.token;
-        router.push("/");
+        handleSignedIn();
       } else {
         toast.add({
           title: "Error",
@@ -67,7 +71,8 @@ async function onSubmit(event: Event) {
       console.error(error);
       toast.add({
         title: "Error",
-        description: error.response.data.message || "An error occurred during login.",
+        description:
+          error.response.data.message || "An error occurred during login.",
         color: "error",
       });
     })
