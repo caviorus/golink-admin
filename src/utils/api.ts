@@ -1,5 +1,5 @@
 import { useAuth } from "@/stores/auth";
-import axios from "axios";
+import axios, { type AxiosInstance } from "axios";
 
 const token = useAuth().token;
 
@@ -11,6 +11,8 @@ const api = axios.create({
   },
 });
 
+
+
 const apiFormData = axios.create({
   baseURL: "http://localhost:8080/api",
   headers: {
@@ -18,5 +20,21 @@ const apiFormData = axios.create({
     Authorization: token ? `Bearer ${token}` : "",
   },
 });
+
+inception(api);
+inception(apiFormData);
+
+function inception(x: AxiosInstance) {
+  x.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response && error.response.status === 401) {
+      // useAuth().clearToken();
+      // window.location.href = "/login";
+    }
+    return Promise.reject(error);
+  }
+);
+}
 
 export { api, apiFormData };

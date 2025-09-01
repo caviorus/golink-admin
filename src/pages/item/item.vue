@@ -56,8 +56,9 @@ const form = ref({
   type: undefined,
   description: "",
   thumbnail: null,
-  images: []
+  images: [],
 });
+const images = ref<{ id: number; image: string }[]>([]);
 
 async function getCategories() {
   try {
@@ -87,15 +88,21 @@ async function getSubcategories() {
 }
 
 function handlePost() {
-  apiFormData
+  api
     .post("/items", form.value)
-    .then((response) => {
+    .then(async (response) => {
       addItemModal.value = false;
       toast.add({
         title: "Success",
         description: "Item added successfully.",
         color: "success",
       });
+
+      form.value.id = response.data.data.id;
+      await apiFormData.post("/items/images", form.value).then((response) => {
+        console.log("Item added with images:", response.data);
+      });
+
       resetForm();
       datatable.value?.getData?.();
     })
@@ -122,10 +129,11 @@ function handleEdit(id: string) {
       form.value.description = item.description;
       form.value.thumbnail = item.thumbnail;
       form.value.category_id = item.subcategory.category.id;
+      images.value = item.item_images || [];
       await getSubcategories();
       form.value.subcategory_id = item.subcategory.id;
 
-      console.log("Item for edit:", item);
+      console.log("Item for edit:", images.value);
     })
     .catch((error) => {
       console.error("Error fetching item for edit:", error);
@@ -145,6 +153,7 @@ function handleDelete(id: string) {
     showCancelButton: true,
     confirmButtonText: "Ya, lanjutkan!",
     cancelButtonText: "Batal",
+    focusConfirm: false,
   }).then((result) => {
     if (result.isConfirmed) {
       api(`/items/${id}`, {
@@ -174,13 +183,18 @@ function handleDelete(id: string) {
 function handlePut(id: string) {
   apiFormData
     .put(`/items/${id}`, form.value)
-    .then((response) => {
+    .then(async (response) => {
       addItemModal.value = false;
       toast.add({
         title: "Success",
         description: "Item updated successfully.",
         color: "success",
       });
+
+      await apiFormData.post("/items/images", form.value).then((response) => {
+        console.log("Item added with images:", response.data);
+      });
+
       resetForm();
       datatable.value?.getData?.();
     })
@@ -206,6 +220,44 @@ function resetForm() {
     thumbnail: null,
     images: [],
   };
+  images.value = [];
+}
+
+function handleDeleteImage(id: number) {
+  setTimeout(async () => {
+    await Swal.fire({
+      title: "Konfirmasi",
+      text: "Apakah kamu yakin ingin menghapus gambar ini?",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Ya, lanjutkan!",
+      cancelButtonText: "Batal",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        api(`/items/images/${id}`, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            console.log("Image deleted:", response.data);
+            toast.add({
+              title: "Success",
+              description: "Image deleted successfully.",
+              color: "success",
+            });
+            images.value = images.value.filter((img) => img.id !== id);
+          })
+          .catch((error) => {
+            console.error("Error deleting image:", error);
+            toast.add({
+              title: "Error",
+              description: "Failed to delete image.",
+              color: "error",
+            });
+          });
+        }
+      });
+      addItemModal.value = true;
+  }, 100);
 }
 
 onMounted(() => {
@@ -221,7 +273,10 @@ onMounted(() => {
     :subcategories="subcategories"
     :handlePut="handlePut"
     :handlePost="handlePost"
+    :images="images"
     v-model:addItemModal="addItemModal"
+    :handleDeleteImage="handleDeleteImage"
+    :handleDelete="handleDelete"
   />
 
   <div>
