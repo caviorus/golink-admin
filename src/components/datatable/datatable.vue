@@ -49,9 +49,9 @@ async function getData() {
         },
       })
       .then((response) => {
-        if (response.data.data.items) {
-          items.value = response.data.data.items;
-          totalItems.value = response.data.data.total || 0;
+        if (response.data.data) {
+          items.value = response.data.data;
+          totalItems.value = response.data.total || 0;
         } else {
           items.value = [];
           totalItems.value = 0;
@@ -104,7 +104,6 @@ const formatedColumns = computed(() => {
 });
 
 function createSortableHeader({ column }: any) {
-  console.log(column);
   const isSorted = column.getIsSorted();
 
   return h(UButton, {

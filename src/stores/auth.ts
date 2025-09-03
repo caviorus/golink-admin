@@ -7,6 +7,7 @@ export const useAuth = defineStore('auth', () => {
   function setToken(newToken: string) {
     token.value = newToken;
     localStorage.setItem("token", newToken);
+    console.log("Token set:", newToken);
   }
 
   function clearToken() {

@@ -1,7 +1,7 @@
 import { useAuth } from "@/stores/auth";
 import axios, { type AxiosInstance } from "axios";
 
-const token = useAuth().token;
+const token = (() => useAuth().token)();
 
 const api = axios.create({
   baseURL: "http://localhost:8080/api",
@@ -29,8 +29,8 @@ function inception(x: AxiosInstance) {
   (response) => response,
   (error) => {
     if (error.response && error.response.status === 401) {
-      // useAuth().clearToken();
-      // window.location.href = "/login";
+      useAuth().clearToken();
+      window.location.href = "/login";
     }
     return Promise.reject(error);
   }
