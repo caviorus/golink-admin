@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { h, onMounted } from "vue";
+import { h, watch, ref } from "vue";
 import DataTable from "@/components/datatable/datatable.vue";
 import { menuDataItems } from "@/constants/menu/item";
-import { useItemStore } from "@/stores/item_store";
 import { useItemCategoryStore } from "@/stores/item_category_store";
+import FormCategory from "./item_category_form.vue";
 
-const item = useItemStore();
 const category = useItemCategoryStore();
 const menuItems = [menuDataItems.children];
+const datatable = ref();
 const columns = [
   {
     accessorKey: "name",
@@ -22,7 +22,7 @@ const columns = [
           "button",
           {
             class: "text-blue-500 hover:underline",
-            onClick: () => item.handleEdit(row.original.id),
+            onClick: () => category.edit(row.original.id),
           },
           "Edit"
         ),
@@ -30,7 +30,7 @@ const columns = [
           "button",
           {
             class: "text-red-500 hover:underline",
-            onClick: () => item.handleDelete(row.original.id),
+            onClick: () => category.remove(row.original.id),
           },
           "Delete"
         ),
@@ -39,11 +39,16 @@ const columns = [
   },
 ];
 
-onMounted(() => {
+watch(datatable, (context) => {
+  if (context) {
+    category.setDatatableRef(context);
+  }
 });
+
 </script>
 
 <template>
+  <FormCategory />
   <div>
     <h1 class="text-xl font-bold mb-4">Item List</h1>
     <UNavigationMenu :items="menuItems" content-orientation="horizontal" />
@@ -57,6 +62,17 @@ onMounted(() => {
       size="md"
       >Add Category</UButton
     >
-    <DataTable ref="datatable" endpoint="/categories" :columns="columns" />
+    <UButton
+      class="mb-2 ml-2"
+      icon="i-lucide-refresh-cw"
+      @click="category.refresh"
+      size="md"
+      >Refresh</UButton
+    >
+    <DataTable
+      ref="datatable"
+      endpoint="/categories"
+      :columns="columns"
+    />
   </div>
 </template>

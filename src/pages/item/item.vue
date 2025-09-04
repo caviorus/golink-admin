@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { h, onMounted } from "vue";
+import { h, ref, onMounted, watch } from "vue";
 import DataTable from "@/components/datatable/datatable.vue";
 import { menuDataItems } from "@/constants/menu/item";
 import { useItemStore } from "@/stores/item_store";
@@ -8,6 +8,7 @@ import { useItemCategoryStore } from "@/stores/item_category_store";
 
 const item = useItemStore();
 const category = useItemCategoryStore();
+const datatable = ref();
 const menuItems = [menuDataItems.children];
 const columns = [
   {
@@ -41,9 +42,14 @@ const columns = [
     },
   },
 ];
+watch(datatable, (context) => {
+  if (context) {
+    item.setDatatableRef(context);
+  }
+});
 
 onMounted(() => {
-  category.getCategories();
+  category.get();
 });
 </script>
 

@@ -53,7 +53,7 @@ export const useItemStore = defineStore("item", () => {
         });
 
         resetForm();
-        datatable.value?.getData?.();
+        refresh();
       })
       .catch((error) => {
         console.error("Error adding item:", error);
@@ -115,7 +115,7 @@ export const useItemStore = defineStore("item", () => {
               description: "Item deleted successfully.",
               color: "success",
             });
-            datatable.value?.getData?.();
+            refresh();
           })
           .catch((error) => {
             console.error("Error deleting item:", error);
@@ -145,7 +145,7 @@ export const useItemStore = defineStore("item", () => {
         });
 
         resetForm();
-        datatable.value?.getData?.();
+        refresh();
       })
       .catch((error) => {
         console.error("Error updating item:", error);
@@ -246,6 +246,14 @@ export const useItemStore = defineStore("item", () => {
     }, 100);
   }
 
+  function setDatatableRef(ref: any) {
+    datatable.value = ref;
+  }
+
+  function refresh() {
+    datatable.value?.getData?.();
+  }
+
   return {
     addItemModal,
     subcategories,
@@ -261,5 +269,7 @@ export const useItemStore = defineStore("item", () => {
     resetForm,
     handleDeleteImage,
     handleDeleteThumbnail,
+    setDatatableRef,
+    refresh
   };
 });
